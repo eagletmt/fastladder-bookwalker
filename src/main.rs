@@ -136,9 +136,9 @@ impl BookwalkerClient {
         let mut client = hyper::Client::new();
         client.set_redirect_policy(hyper::client::RedirectPolicy::FollowNone);
         return BookwalkerClient {
-            base_url: base_url,
-            client: client,
-        };
+                   base_url: base_url,
+                   client: client,
+               };
     }
 
     fn get_new_books(&self, id: &str) -> Result<Vec<Feed>, String> {
@@ -186,48 +186,57 @@ impl BookwalkerClient {
                      doc: select::document::Document)
                      -> Result<Vec<Feed>, String> {
         let mut feeds = Vec::new();
-        for item in doc.find(select::predicate::Class("bookItemInner")).iter() {
+        for item in doc.find(select::predicate::Class("bookItemInner"))
+                .iter() {
             let h3_node = try!(item.find(select::predicate::Class("img-book"))
-                .first()
-                .ok_or("Unable to find .img-book node".to_owned()));
-            let link_node = try!(h3_node.find(select::predicate::Name("a"))
-                .first()
-                .ok_or("Unable to find .img-book a node"));
-            let link = try!(link_node.attr("href")
-                .ok_or("href does not exist in .img-book a node"));
-            let img_node = try!(link_node.find(select::predicate::Name("img"))
-                .first()
-                .ok_or("Unable to find .img-book a img node"));
-            let img = try!(img_node.attr("src")
-                .ok_or("src does not exist in .img-book a img node"));
+                                   .first()
+                                   .ok_or("Unable to find .img-book node".to_owned()));
+            let link_node = try!(h3_node
+                                     .find(select::predicate::Name("a"))
+                                     .first()
+                                     .ok_or("Unable to find .img-book a node"));
+            let link = try!(link_node
+                                .attr("href")
+                                .ok_or("href does not exist in .img-book a node"));
+            let img_node = try!(link_node
+                                    .find(select::predicate::Name("img"))
+                                    .first()
+                                    .ok_or("Unable to find .img-book a img node"));
+            let img = try!(img_node
+                               .attr("src")
+                               .ok_or("src does not exist in .img-book a img node"));
             let thumb_url = url::Url::parse(img).unwrap();
             let author_node = try!(item.find(select::predicate::Class("book-name"))
-                .first()
-                .ok_or("Unable to find .book-name node"));
+                                       .first()
+                                       .ok_or("Unable to find .book-name node"));
             let title_node = try!(item.find(select::predicate::Class("book-tl"))
-                .first()
-                .ok_or("Unable to find .book-tl node"));
+                                      .first()
+                                      .ok_or("Unable to find .book-tl node"));
             let shop_node = try!(item.find(select::predicate::Class("shop-name"))
-                .first()
-                .ok_or("Unable to find .shop-name node"));
+                                     .first()
+                                     .ok_or("Unable to find .shop-name node"));
             let price = item.find(select::predicate::Class("book-price")
-                    .or(select::predicate::Class("book-series")))
+                                      .or(select::predicate::Class("book-series")))
                 .first()
                 .map(|node| node.text());
             let mut link_url = url::Url::parse(link).unwrap();
-            link_url.path_segments_mut().unwrap().pop_if_empty().pop();
+            link_url
+                .path_segments_mut()
+                .unwrap()
+                .pop_if_empty()
+                .pop();
             feeds.push(Feed {
-                feedlink: url.to_string(),
-                feedtitle: feedtitle.to_string(),
-                author: author_node.text(),
-                title: title_node.text(),
-                thumb_url: thumb_url,
-                link: link.to_owned(),
-                shop: shop_node.text(),
-                price: price,
-                category: "bookwalker".to_owned(),
-                guid: link_url.to_string(),
-            });
+                           feedlink: url.to_string(),
+                           feedtitle: feedtitle.to_string(),
+                           author: author_node.text(),
+                           title: title_node.text(),
+                           thumb_url: thumb_url,
+                           link: link.to_owned(),
+                           shop: shop_node.text(),
+                           price: price,
+                           category: "bookwalker".to_owned(),
+                           guid: link_url.to_string(),
+                       });
         }
         return Ok(feeds);
     }
@@ -241,9 +250,9 @@ struct Fastladder {
 impl Fastladder {
     fn new(base_url: url::Url, api_key: String) -> Fastladder {
         return Fastladder {
-            base_url: base_url,
-            api_key: api_key,
-        };
+                   base_url: base_url,
+                   api_key: api_key,
+               };
     }
 
     fn post_feeds(&self, feeds: &Vec<Feed>) -> Result<(), String> {
