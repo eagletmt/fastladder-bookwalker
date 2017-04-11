@@ -1,6 +1,7 @@
 extern crate hyper;
 extern crate hyper_native_tls;
-extern crate rustc_serialize;
+extern crate serde;
+extern crate serde_json;
 extern crate select;
 extern crate url;
 #[macro_use]
@@ -38,8 +39,7 @@ fn main() {
         Ok(feeds) => {
             if dry_run {
                 println!("{}",
-                         rustc_serialize::json::encode(&feeds)
-                             .expect("Unable to encode feeds into JSON"));
+                         serde_json::to_string(&feeds).expect("Unable to encode feeds into JSON"));
             } else {
                 let api_key = std::env::var("FASTLADDER_API_KEY")
                     .expect("FASTLADDER_API_KEY is required to post feeds");
@@ -78,30 +78,31 @@ struct Feed {
     guid: String,
 }
 
-impl rustc_serialize::Encodable for Feed {
-    fn encode<S: rustc_serialize::Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        s.emit_struct("Feed", 8, |s| {
-            try!(s.emit_struct_field("feedlink", 0, |s| self.feedlink.encode(s)));
-            try!(s.emit_struct_field("feedtitle", 1, |s| self.feedtitle.encode(s)));
-            try!(s.emit_struct_field("author", 2, |s| self.author.encode(s)));
-            try!(s.emit_struct_field("title", 3, |s| self.title.encode(s)));
-            try!(s.emit_struct_field("body", 4, |s| {
-                let mut body = format!("<img src=\"{}\"/><p>{}</p><p>{}</p>",
-                                       self.thumb_url,
-                                       self.author,
-                                       self.shop);
-                if let Some(ref price) = self.price {
-                    body.push_str("<p>");
-                    body.push_str(price);
-                    body.push_str("</p>");
-                }
-                return body.encode(s);
-            }));
-            try!(s.emit_struct_field("link", 5, |s| self.link.encode(s)));
-            try!(s.emit_struct_field("category", 6, |s| self.category.encode(s)));
-            try!(s.emit_struct_field("guid", 7, |s| self.guid.encode(s)));
-            Ok(())
-        })
+impl serde::Serialize for Feed {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: serde::Serializer
+    {
+        use serde::ser::SerializeStruct;
+
+        let mut struc = try!(serializer.serialize_struct("Feed", 8));
+        try!(struc.serialize_field("feedlink", &self.feedlink));
+        try!(struc.serialize_field("feedtitle", &self.feedtitle));
+        try!(struc.serialize_field("author", &self.author));
+        try!(struc.serialize_field("title", &self.title));
+        let mut body = format!("<img src=\"{}\"/><p>{}</p><p>{}</p>",
+                               self.thumb_url,
+                               self.author,
+                               self.shop);
+        if let Some(ref price) = self.price {
+            body.push_str("<p>");
+            body.push_str(price);
+            body.push_str("</p>");
+        }
+        try!(struc.serialize_field("body", &body));
+        try!(struc.serialize_field("link", &self.link));
+        try!(struc.serialize_field("category", &self.category));
+        try!(struc.serialize_field("guid", &self.guid));
+        struc.end()
     }
 }
 
@@ -267,7 +268,7 @@ impl Fastladder {
         let tls = hyper_native_tls::NativeTlsClient::new().unwrap();
         let client = hyper::Client::with_connector(hyper::net::HttpsConnector::new(tls));
         let url = self.base_url.join("/rpc/update_feeds").unwrap();
-        match rustc_serialize::json::encode(feeds) {
+        match serde_json::to_string(feeds) {
             Ok(feeds_json) => {
                 let request_body = url::form_urlencoded::Serializer::new(String::new())
                     .append_pair("api_key", &self.api_key)
