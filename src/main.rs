@@ -12,19 +12,26 @@ use std::io::Read;
 use std::io::Write;
 
 fn main() {
-    let app = clap_app!(fastladder_bookwalker =>
-        (version: "0.1.0")
-        (about: "Post bookwalker feeds to fastladder")
-        (@arg dry_run: -n "dry-run")
-        (@subcommand new =>
-            (about: "Get newly released books")
-            (@arg ID: +required +multiple "ID (st1, st2, ct1, ct2, ...)"))
-        (@subcommand schedule =>
-            (about: "Get scheduled books")
-            (@arg ID: +required +multiple "ID (st1, st2, ct1, ct2, ...)"))
-    );
+    let app = clap::App::new("fastladder-bookwalker")
+        .version(crate_version!())
+        .about("Post bookwalker feeds to fastladder")
+        .arg(clap::Arg::with_name("dry-run")
+                 .long("dry-run")
+                 .short("n"))
+        .subcommand(clap::SubCommand::with_name("new")
+                        .about("Get newly released books")
+                        .arg(clap::Arg::with_name("ID")
+                                 .required(true)
+                                 .multiple(true)
+                                 .help("ID (st1, st2, ct1, ct2, ...)")))
+        .subcommand(clap::SubCommand::with_name("schedule")
+                        .about("Get scheduled books")
+                        .arg(clap::Arg::with_name("ID")
+                                 .required(true)
+                                 .multiple(true)
+                                 .help("ID (st1, st2, ct1, ct2, ...)")));
     let matches = app.clone().get_matches();
-    let dry_run = matches.is_present("dry_run");
+    let dry_run = matches.is_present("dry-run");
     let client = BookwalkerClient::new(url::Url::parse("https://bookwalker.jp").unwrap());
 
     match run_subcommand(client, &app, matches.subcommand()) {
