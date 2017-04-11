@@ -1,4 +1,5 @@
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate rustc_serialize;
 extern crate select;
 extern crate url;
@@ -133,7 +134,8 @@ fn run_subcommand(client: BookwalkerClient,
 
 impl BookwalkerClient {
     fn new(base_url: url::Url) -> BookwalkerClient {
-        let mut client = hyper::Client::new();
+        let tls = hyper_native_tls::NativeTlsClient::new().unwrap();
+        let mut client = hyper::Client::with_connector(hyper::net::HttpsConnector::new(tls));
         client.set_redirect_policy(hyper::client::RedirectPolicy::FollowNone);
         return BookwalkerClient {
                    base_url: base_url,
@@ -186,38 +188,37 @@ impl BookwalkerClient {
                      doc: select::document::Document)
                      -> Result<Vec<Feed>, String> {
         let mut feeds = Vec::new();
-        for item in doc.find(select::predicate::Class("bookItemInner"))
-                .iter() {
+        for item in doc.find(select::predicate::Class("bookItemInner")) {
             let h3_node = try!(item.find(select::predicate::Class("img-book"))
-                                   .first()
+                                   .next()
                                    .ok_or("Unable to find .img-book node".to_owned()));
             let link_node = try!(h3_node
                                      .find(select::predicate::Name("a"))
-                                     .first()
+                                     .next()
                                      .ok_or("Unable to find .img-book a node"));
             let link = try!(link_node
                                 .attr("href")
                                 .ok_or("href does not exist in .img-book a node"));
             let img_node = try!(link_node
                                     .find(select::predicate::Name("img"))
-                                    .first()
+                                    .next()
                                     .ok_or("Unable to find .img-book a img node"));
             let img = try!(img_node
                                .attr("src")
                                .ok_or("src does not exist in .img-book a img node"));
             let thumb_url = url::Url::parse(img).unwrap();
             let author_node = try!(item.find(select::predicate::Class("book-name"))
-                                       .first()
+                                       .next()
                                        .ok_or("Unable to find .book-name node"));
             let title_node = try!(item.find(select::predicate::Class("book-tl"))
-                                      .first()
+                                      .next()
                                       .ok_or("Unable to find .book-tl node"));
             let shop_node = try!(item.find(select::predicate::Class("shop-name"))
-                                     .first()
+                                     .next()
                                      .ok_or("Unable to find .shop-name node"));
             let price = item.find(select::predicate::Class("book-price")
                                       .or(select::predicate::Class("book-series")))
-                .first()
+                .next()
                 .map(|node| node.text());
             let mut link_url = url::Url::parse(link).unwrap();
             link_url
@@ -256,7 +257,8 @@ impl Fastladder {
     }
 
     fn post_feeds(&self, feeds: &Vec<Feed>) -> Result<(), String> {
-        let client = hyper::Client::new();
+        let tls = hyper_native_tls::NativeTlsClient::new().unwrap();
+        let client = hyper::Client::with_connector(hyper::net::HttpsConnector::new(tls));
         let url = self.base_url.join("/rpc/update_feeds").unwrap();
         match rustc_serialize::json::encode(feeds) {
             Ok(feeds_json) => {

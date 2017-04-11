@@ -4,8 +4,9 @@ version = "0.1.0"
 authors = ["Kohei Suzuki <eagletmt@gmail.com>"]
 
 [dependencies]
-clap = "2.19"
-hyper = "0.9"
+clap = "2.23"
+hyper = "0.10"
+hyper-native-tls = "0.2"
 rustc-serialize = "0.3"
-select = "0.3"
-url = "1.2"
+select = "0.4"
+url = "1.4"
