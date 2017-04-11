@@ -1,6 +1,6 @@
 [package]
 name = "fastladder-bookwalker"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Kohei Suzuki <eagletmt@gmail.com>"]
 
 [dependencies]
