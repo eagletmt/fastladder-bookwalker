@@ -1,6 +1,6 @@
 [root]
 name = "fastladder-bookwalker"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap 2.23.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
