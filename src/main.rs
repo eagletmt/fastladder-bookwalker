@@ -1,5 +1,5 @@
 extern crate hyper;
-extern crate hyper_native_tls;
+extern crate hyper_rustls;
 extern crate serde;
 extern crate serde_json;
 extern crate select;
@@ -142,7 +142,7 @@ fn run_subcommand(client: BookwalkerClient,
 
 impl BookwalkerClient {
     fn new(base_url: url::Url) -> BookwalkerClient {
-        let tls = hyper_native_tls::NativeTlsClient::new().unwrap();
+        let tls = hyper_rustls::TlsClient::new();
         let mut client = hyper::Client::with_connector(hyper::net::HttpsConnector::new(tls));
         client.set_redirect_policy(hyper::client::RedirectPolicy::FollowNone);
         return BookwalkerClient {
@@ -265,7 +265,7 @@ impl Fastladder {
     }
 
     fn post_feeds(&self, feeds: &Vec<Feed>) -> Result<(), String> {
-        let tls = hyper_native_tls::NativeTlsClient::new().unwrap();
+        let tls = hyper_rustls::TlsClient::new();
         let client = hyper::Client::with_connector(hyper::net::HttpsConnector::new(tls));
         let url = self.base_url.join("/rpc/update_feeds").unwrap();
         match serde_json::to_string(feeds) {

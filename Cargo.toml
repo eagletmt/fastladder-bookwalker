@@ -6,7 +6,7 @@ authors = ["Kohei Suzuki <eagletmt@gmail.com>"]
 [dependencies]
 clap = "2.23"
 hyper = "0.10"
-hyper-native-tls = "0.2"
+hyper-rustls = "0.3"
 select = "0.4"
 serde = "0.9"
 serde_json = "0.9"
