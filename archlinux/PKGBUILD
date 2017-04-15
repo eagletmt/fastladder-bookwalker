@@ -1,11 +1,11 @@
 # Maintainer: Kohei Suzuki <eagletmt@gmail.com>
 pkgname=fastladder-bookwalker
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 arch=('i686' 'x86_64')
 url='https://github.com/eagletmt/fastladder-bookwalker'
 license=('MIT')
-depends=('openssl')
+depends=('gcc-libs')
 makedepends=('cargo')
 source=("https://github.com/eagletmt/$pkgname/archive/v$pkgver.tar.gz")
 
@@ -19,4 +19,4 @@ package() {
   install -m755 target/release/$pkgname "$pkgdir/usr/bin/"
 }
 
-sha512sums=('1b550384df50df38937fe7e695e063947debb3054a0739069d900546965cbb62fd45d3c4aefcb62e00dae90ae5235a8f924f2855ee803e4356066cd5fc4c0b53')
+sha512sums=('a4d5f1b6857be03d42ba48b0db249896cf7131da4fe4b94d6e44b1735dd6542fe292799dee37bbdd5a4606a09b50976bc8096f349440878b7ecfe641e4822216')
