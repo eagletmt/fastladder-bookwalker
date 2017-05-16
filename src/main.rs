@@ -16,9 +16,7 @@ fn main() {
     let app = clap::App::new("fastladder-bookwalker")
         .version(crate_version!())
         .about("Post bookwalker feeds to fastladder")
-        .arg(clap::Arg::with_name("dry-run")
-                 .long("dry-run")
-                 .short("n"))
+        .arg(clap::Arg::with_name("dry-run").long("dry-run").short("n"))
         .subcommand(clap::SubCommand::with_name("new")
                         .about("Get newly released books")
                         .arg(clap::Arg::with_name("ID")
@@ -228,12 +226,6 @@ impl BookwalkerClient {
                                       .or(select::predicate::Class("book-series")))
                 .next()
                 .map(|node| node.text());
-            let mut link_url = url::Url::parse(link).unwrap();
-            link_url
-                .path_segments_mut()
-                .unwrap()
-                .pop_if_empty()
-                .pop();
             feeds.push(Feed {
                            feedlink: url.to_string(),
                            feedtitle: feedtitle.to_string(),
@@ -244,7 +236,7 @@ impl BookwalkerClient {
                            shop: shop_node.text(),
                            price: price,
                            category: "bookwalker".to_owned(),
-                           guid: link_url.to_string(),
+                           guid: link.to_owned(),
                        });
         }
         return Ok(feeds);
